@@ -1,7 +1,10 @@
-import numpy as np
+# import numpy as np
 
 containers = {}
 balanceMass = 0
+# update the weights to be in proper spots after moving them by modulo 6
+leftSideWeights = []
+rightSideWeights = []
 
 def readfile(filename):
 
@@ -15,21 +18,39 @@ def readfile(filename):
                 # global containers
                 containers[row, col] = weight
 
-def calcBalanceMass(containers):
+def calcBalanceMass():
     midway = 6
     leftMass = rightMass = 0
 
-    # print(containers)
-    # print(containers[0])
     for key, val in containers.items():
         # check column value to see if mass should be added to left or right side
         if key[1] <= midway:
             leftMass += val
+            leftSideWeights.append(val)
         else:
             rightMass += val
+            rightSideWeights.append(val)
 
     global balanceMass
     balanceMass = (leftMass + rightMass) // 2
+    # print(leftSideWeights)
+    # print(rightSideWeights)
+
+# TODO: stop when BalanceScore = min(left,right)/max(left,right) > 0.9
+def calcHN():
+    hnCount = 0
+    leftMass = sum(leftSideWeights)
+    rightMass = sum(rightSideWeights)
+    weightsToMove = leftSideWeights if leftMass > rightMass else rightSideWeights
+    deficit = balanceMass - min(leftMass, rightMass)
+    weightsToMove.sort(reverse=True)
+
+    for w in weightsToMove:
+        if w <= deficit and w > 0:
+            deficit -= w
+            hnCount += 1
+
+    return hnCount
 
 if __name__ == "__main__":
     
@@ -42,6 +63,8 @@ if __name__ == "__main__":
     readfile(filename)
 
     # print(containers)
-    calcBalanceMass(containers)
+    calcBalanceMass()
 
-    print(balanceMass)
+    print("Balance Mass", balanceMass)
+
+    print(calcHN())
