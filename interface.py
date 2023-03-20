@@ -4,6 +4,7 @@ from tkinter import*
 import logging
 from tkinter import filedialog
 from collections import namedtuple
+from test import show_animation
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
@@ -135,6 +136,9 @@ loading_popup_button.grid()
 #button that will popup a window where the user can write to the log file
 popup_button = tk.Button(main, text="logfile write", command=popup_logfile)
 popup_button.grid()
+
+animation_popup = tk.Button(main, text="animation", command=show_animation)
+animation_popup.grid()
 
 
 main.mainloop()
