@@ -4,7 +4,7 @@ from tkinter import*
 import logging
 from tkinter import filedialog
 from collections import namedtuple
-from test import show_animation
+from animation import show_animation
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
@@ -93,7 +93,7 @@ def offloading_popup(filename):
                 container = Container(frame, max_row - row +1, col, name)
                 containers.append(container)
 
-    ok_button = tk.Button(frame, text="OK", command=lambda: send_container_info(containers))
+    ok_button = tk.Button(frame, text="OK", command=lambda: send_container_info(containers,filename))
     ok_button.grid(row=len(containers) + 1, column=0, padx=5, pady=5)
 
     cancel_button = tk.Button(frame, text="Cancel", command=top.destroy)
@@ -106,9 +106,15 @@ def offloading_popup(filename):
 #selected_containers[x] will gives the array that holds the tuples that contains the name and coordinates
 #elected_containers[x][0] will give the name of the container
 #selected_containers[x][1] will give the x,y coordinates of the container
-def send_container_info(containers):
+def send_container_info(containers,filename):
     selected_containers = [ContainersInfo(container.get_name(), container.get_coordinates()) for container in containers if container.selected]
-    print(selected_containers)
+    print(selected_containers) # this will be a function call to calculate the optimal path for now we hardcode path
+    paths = [[(1,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0), (1,0)],
+                [(3,3), (3,4), (3,5), (4,5), (5,5), (5,4), (5,3), (4,3)],
+                [(0,1), (0,2), (0,3), (1,3)]]    
+    # # print(paths)
+    #TODO wait for function to return paths and then call show_animation
+    show_animation(paths,filename)
 
 def ok_action(entry_value, popup_window):
     logging.info({entry_value})
@@ -137,8 +143,8 @@ loading_popup_button.grid()
 popup_button = tk.Button(main, text="logfile write", command=popup_logfile)
 popup_button.grid()
 
-animation_popup = tk.Button(main, text="animation", command=show_animation)
-animation_popup.grid()
+# animation_popup = tk.Button(main, text="animation", command=show_animation)
+# animation_popup.grid()
 
 
 main.mainloop()

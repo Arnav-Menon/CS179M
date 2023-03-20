@@ -61,9 +61,8 @@ def next_animation( index, animate_button, containers, paths, popup):
         start_animation(current_path, index, animate_button, containers, paths, popup)
 
 
-def show_animation():
+def show_animation(paths,filename):
     filename = "ShipCase4.txt"
-
     popup = Toplevel()
     popup.title("Grid Animation")
 
@@ -81,12 +80,12 @@ def show_animation():
                 name = parts[2].strip()
                 container = Container(canvas, max_row - row, col, name)
                 containers[max_row - row].append(container)
-    paths = [[(1,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0), (1,0)],
-                [(3,3), (3,4), (3,5), (4,5), (5,5), (5,4), (5,3), (4,3)],
-                [(0,1), (0,2), (0,3), (1,3)]]
     max_row = 7
+    # paths = [[(1,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0), (1,0)],
+    #             [(3,3), (3,4), (3,5), (4,5), (5,5), (5,4), (5,3), (4,3)],
+    #             [(0,1), (0,2), (0,3), (1,3)]]
     paths = [[(max_row - row, col) for row, col in path] for path in paths]
-
+    # print(paths)
     # global current_path
     index = 0
     animation_id = None
