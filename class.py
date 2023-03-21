@@ -1,3 +1,7 @@
+# HEAVY HEAVY HEAVY inspo from CS170 8 Puzzle project, linked here:
+# https://github.com/Arnav-Menon/CS170/blob/523587237ddec22717e4973c0cd4aa29417ec87c/8puzzle/main.py
+
+
 import itertools
 import heapq as hq
 import copy
@@ -5,18 +9,19 @@ import time
 
 dummyContainers = {}
 containers = []
+namesOfContainers = []
 visitedStates = []
 createdStates = []
 exploreStates = []
 maxSize = 1
 
 class Node:
-    def __init__(self, balanceMass, shipLayout, parent):
+    def __init__(self, balanceMass, shipLayout, parent, names):
         self.shipLayout = shipLayout
         self.balanceMass = balanceMass
         self.leftMass = 0
         self.rightMass = 0
-        self.movesToMake = []
+        self.movesToMake = [[], []]
         self.possibleMoves = []
         # default starting pos is first column, top row
         # TODO: CHANGE THIS TO [12,0] WHEN READY FOR FINAL VERSION
@@ -29,6 +34,8 @@ class Node:
         # self.pickUp = False
         # this is which container is held by the crane, if any
         self.containerHeld = []
+        self.containerName = ""
+        self.namesOfContainers = names
         self.parent = parent
 
     def exploreMoves(self, f, nanCounter):
@@ -74,7 +81,7 @@ class Node:
                 child = copy.deepcopy(self)
 
                 print("\tMOVE", move)
-                newNode = Node(self.balanceMass, self.shipLayout, self)
+                newNode = Node(self.balanceMass, self.shipLayout, self, child.namesOfContainers)
                 newNode.gn = self.gn + 1
                 newNode.possibleMoves = self.getDropoffLocs(container, move, self.shipLayout)
                 # print(newNode.possibleMoves)
@@ -83,7 +90,10 @@ class Node:
                     # print("\t", move)
                     # print("\t", newNode.possibleMoves)
                     print("BEFORE UPDATE...", newNode.shipLayout)
-                    newNode.shipLayout = newNode.dropContainer(move, container, child.shipLayout)
+                    # print(move)
+                    updateMove, newNode.shipLayout = newNode.dropContainer(move, container, child.shipLayout)
+                    # print("AMSWER", answer)
+                    # updateMove, newNode.shipLayout = answer[0], answer[1]
                     print("AFTER UPDATE...", newNode.shipLayout)
                     newNode.updateLeftRightWeights(nanCounter)
                     print(newNode.leftMass, newNode.rightMass)
@@ -95,18 +105,41 @@ class Node:
 
                     #  and newNode.shipLayout not in createdStates
                     if newNode.shipLayout not in visitedShips and newNode.shipLayout not in createdStates:
+                        m = list(container)
                         print("\tPushing this layout...", newNode.shipLayout)
+                        print("\t\t\t\t", m, updateMove)
+                        print("\t\t\t\t", newNode.namesOfContainers)
+                        # print("\t\t\t\t", newNode.namesOfContainers[m[0]][m[1]])
+                        newNode.movesToMake[0] = m
+                        newNode.movesToMake[1] = updateMove
+                        
+                        # update this with container name
+                        newNode.containerName = newNode.namesOfContainers[m[0]][m[1]]
+                        # update namesOfContainers to reflect updated container pos
+                        newNode.namesOfContainers = newNode.updateNamesOfContainers(m, updateMove)
+                        
+                        print(newNode.movesToMake)
                         hq.heappush(exploreStates, newNode)
                         createdStates.append(newNode.shipLayout)
                         global maxSize
                         maxSize = max(maxSize, len(exploreStates))
-
+                        print("MS", maxSize)
 
 
                 print("----------------")
             print("\n\n\n")
 
             # return
+
+    def updateNamesOfContainers(self, start, end):
+        # print(start, end)
+        # print("BEFORE", self.namesOfContainers)
+        # print(self.namesOfContainers[start[0]][start[1]])
+        temp = self.namesOfContainers[end[0]][end[1]]
+        self.namesOfContainers[end[0]][end[1]] = self.namesOfContainers[start[0]][start[1]]
+        self.namesOfContainers[start[0]][start[1]] = temp
+        # print("AFTER", self.namesOfContainers)
+        return self.namesOfContainers
 
     # drop container into empty spot
     def dropContainer(self, move, containerHeld, shipLayout):
@@ -128,7 +161,7 @@ class Node:
         # means no empty spot in this column
         if locToDrop[1] == -1:
             print("...returning -1...")
-            return shipLayout
+            return (locToDrop, shipLayout)
             
         locToDrop[0] = move[0]
         # print("LOC DROP", locToDrop)
@@ -142,7 +175,7 @@ class Node:
         shipLayout[locToDrop[0]][locToDrop[1]] = shipLayout[containerHeld[0]][containerHeld[1]]
         shipLayout[containerHeld[0]][containerHeld[1]] = 0
         # print("AFTER UPDATE", s)
-        return shipLayout
+        return (locToDrop, shipLayout)
 
     def pickupContainer(self, move, shipLayout):
         # print(move, shipLayout)
@@ -195,14 +228,14 @@ class Node:
         deficit = self.balanceMass - min(leftMass, rightMass)
         weightsToMoveCopy = list(itertools.chain.from_iterable(weightsToMove))
 
-        print("WeightsToMove", weightsToMove)
-        print("Otherside", otherSide)
+        # print("WeightsToMove", weightsToMove)
+        # print("Otherside", otherSide)
 
         for w in weightsToMoveCopy:
             if w <= deficit and w > 0:
                 print("Moving", w)
-                print(self.index_2d(weightsToMove, w))
-                print(self.index_2d(otherSide, 0))
+                # print(self.index_2d(weightsToMove, w))
+                # print(self.index_2d(otherSide, 0))
                 deficit -= w
                 hnCount += 1
                 # print("\t\t\t\t\t", deficit)
@@ -252,10 +285,10 @@ class Puzzle:
                     col -= 1
                     weight = int(parts[1].strip()[1:-1])
                     if parts[-1] == "NAN":
-                        dummyContainers[row, col] = -1
+                        dummyContainers[row, col] = [-1, ""]
                         nanCounter += 1
                     else:
-                        dummyContainers[row, col] = weight
+                        dummyContainers[row, col] = [weight, parts[-1]]
 
         return nanCounter
 
@@ -270,11 +303,14 @@ class Puzzle:
         for i in range(0, numCols):
             j = 0
             temp = []
+            names = []
             while j < numRows:
                 # print(i, j)
-                temp.append(dummyContainers[j, i])
+                temp.append(dummyContainers[j, i][0])
+                names.append(dummyContainers[j, i][1])
                 j += 1
             containers.append(temp)
+            namesOfContainers.append(names)
 
         # print("--------------------------------------------------------")
         # print(containers)
@@ -311,33 +347,14 @@ class Puzzle:
             lowerWeightLimit = int(0.9 * self.balanceMass)
             upperWeightLimit = int(1.1 * self.balanceMass)
 
-            # left side is heavier
-            # if self.heavySide == 0 and node.rightMass >= lowerWeightLimit and node.leftMass <= self.balanceMass:
-            #     f.write("\n\n!!!!!!!!!!!!!!!!DONE WITH SEARCH0!!!!!!!!!!!!!!!!\n")
-            #     f.write(str(node.shipLayout))
-            #     print("!!!!!!!!!!!!!!!!DONE WITH SEARCH0!!!!!!!!!!!!!!!!")
-            #     print(node.shipLayout)
-            #     print(lowerWeightLimit, node.leftMass, node.rightMass, self.balanceMass)
-            #     self.printSolution(node)
-            #     return node.gn
-            # # right side is heavier
-            # elif self.heavySide == 1 and node.leftMass >= lowerWeightLimit and node.rightMass <= self.balanceMass:
-            #     f.write("\n\n!!!!!!!!!!!!!!!!DONE WITH SEARCH1!!!!!!!!!!!!!!!!\n")
-            #     f.write(str(node.shipLayout))
-            #     print("!!!!!!!!!!!!!!!!DONE WITH SEARCH1!!!!!!!!!!!!!!!!")
-            #     print(node.shipLayout)
-            #     print(lowerWeightLimit, node.leftMass, node.rightMass, self.balanceMass)
-            #     self.printSolution()
-            #     return node.gn
-
             if lowerWeightLimit < node.rightMass < upperWeightLimit and lowerWeightLimit < node.leftMass < upperWeightLimit:
                 f.write("\n\n!!!!!!!!!!!!!!!!DONE WITH SEARCH0!!!!!!!!!!!!!!!!\n")
                 f.write(str(node.shipLayout))
                 print("!!!!!!!!!!!!!!!!DONE WITH SEARCH0!!!!!!!!!!!!!!!!")
                 print(node.shipLayout)
                 print(lowerWeightLimit, node.leftMass, node.rightMass, self.balanceMass)
-                self.printSolution(node)
-                return node.gn
+                moves, names = self.printSolution(node)
+                return (node.gn, moves, names)
 
             node.exploreMoves(f, self.nanCounter)
             # print("--------------------------------------------------------------------")
@@ -347,6 +364,8 @@ class Puzzle:
 
     def printSolution(self, endNode):
         nodes = []
+        movesToMake = []
+        namesOfContainers = []
 
         while endNode.parent:
             nodes.append(endNode)
@@ -357,10 +376,17 @@ class Puzzle:
         nodes = nodes[::-1]
         print(nodes[0].parent.shipLayout)
         print("\t", nodes[0].parent.fn, nodes[0].parent.gn, nodes[0].parent.hn)
+        # print("\t\t", nodes[0].parent.movesToMake)
         for n in nodes:
             print(n.shipLayout)
             print("\t", n.fn, n.gn, n.hn)
+            print("\t\t", n.namesOfContainers)
+            movesToMake.append(n.movesToMake)
+            namesOfContainers.append(n.containerName)
+            # print("\t\t", n.movesToMake)
             # print(n.calcHN(n.shipLayout, n.leftMass, n.rightMass))
+
+        return (movesToMake, namesOfContainers)
 
 if __name__ == "__main__":
     
@@ -369,20 +395,21 @@ if __name__ == "__main__":
     # file_num = input("Select number 1-5 for approriate test file: ")
 
     # filename += file_num + filetype
-    filename = "ShipCase5.txt"
+    filename = "ShipCase0.txt"
 
     # node = Node(None)
     puzzle = Puzzle()
     nanCounter = puzzle.readfile(filename)
     puzzle.formatContainers()
     puzzle.nanCounter = nanCounter
-    node = Node(0, containers, None)
+    node = Node(0, containers, None, namesOfContainers)
     node.shipLayout = containers
     # node.updateLeftRightWeights()
     # node.hn = node.calcHN(node.shipLayout, node.leftMass, node.rightMass)
     # node.fn = node.gn + node.hn
     # print(dummyContainers)
-    print(containers)
+    # print(containers)
+    # print(namesOfContainers)
 
     puzzle.calcBalanceMass(node)
     puzzle.heavySide = 0 if node.leftMass > node.rightMass else 1
@@ -395,12 +422,14 @@ if __name__ == "__main__":
     start = time.time()
     hq.heappush(exploreStates, node)
 
-    depth = puzzle.solve()
+    depth, moves, names = puzzle.solve()
 
     print("Took", depth, "levels to find solution")
     print(f"Took {time.time() - start:.1f} seconds")
     print("Max size", maxSize)
     print(node.shipLayout)
+    print(moves)
+    print(names)
     # print(len(createdStates))
     # for x in createdStates:
         # print(x, "\n")
