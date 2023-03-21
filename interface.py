@@ -98,7 +98,7 @@ def offloading_popup(filename):
                 container = Container(frame, max_row - row +1, col, name)
                 containers.append(container)
 
-    ok_button = tk.Button(frame, text="OK", command=lambda: send_container_info(containers,filename))
+    ok_button = tk.Button(frame, text="OK", command=lambda: logging_ok_button(containers,filename,top))
     ok_button.grid(row=len(containers) + 1, column=0, padx=5, pady=5)
 
     cancel_button = tk.Button(frame, text="Cancel", command=top.destroy)
@@ -128,12 +128,15 @@ def ok_action(entry_value, popup_window):
     logging.info({entry_value})
     popup_window.destroy()
 
+def logging_ok_button(containers,filename,top):
+    top.destroy()
+    send_container_info(containers,filename)
+
 def balance_container(filename):
     print("Call balance function")
     paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
          [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
          [[0, 1], [0, 2], [0, 3], [1, 3]]]
-    # print(paths)
     show_animation(paths,filename)
 
 #TODO clean up the main GUI where the user can select onload/offload and writing to logfile
