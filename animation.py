@@ -80,24 +80,29 @@ def animate(containers, paths, current_path, index,animate_button,popup):
     else:
         popup.after(100, animate, containers, paths, current_path, index,animate_button, popup)
 
-def start_animation(current_path,index,animate_button,containers,paths,popup):
+def start_animation(current_path,index,animate_button,containers,paths,popup,next_button):
     global animation_id, animation_running
     animation_running = False
+    print(current_path)
+    print(len(paths))
+    if (current_path >= len(paths)-1):
+        next_button.config(text='End Program', command=popup.destroy)
     if not animation_running:
-        animate_button.config(text='Stop', command=lambda: stop_animation(current_path,index,animate_button,containers,paths,popup))
+        animate_button.config(text='Stop', command=lambda: stop_animation(current_path,index,animate_button,containers,paths,popup,next_button))
         animation_running = True
         animation_id = animate(containers, paths, current_path, index,animate_button,popup)
+    
 
-def stop_animation(current_path,index,animate_button,containers,paths,popup):
+def stop_animation(current_path,index,animate_button,containers,paths,popup,next_button):
     global animation_id, animation_running
-    animate_button.config(text='Animate', command=lambda: start_animation(current_path, index, animate_button, containers, paths, popup))
+    animate_button.config(text='Animate', command=lambda: start_animation(current_path, index, animate_button, containers, paths, popup,next_button))
     animation_running = False
 
 #button functionality that moves onto to the next move
 #deletes old start and end text
 #updates name of container being moved
 #updates what move number it is
-def next_animation( index, animate_button, containers, paths, popup, current_path_label, container_label):
+def next_animation( index, animate_button, containers, paths, popup, current_path_label, container_label,next_button):
     global current_path,animation_running
     tempPath = paths[current_path]
 
@@ -109,7 +114,6 @@ def next_animation( index, animate_button, containers, paths, popup, current_pat
 
     startContainer = containers[tempPath[0][0]][tempPath[0][1]]
     endContainer = containers[tempPath[-1][0]][tempPath[-1][1]]
- 
     if not animation_running:
         current_path = (current_path + 1) 
         current_path_label.config(text='Current Move {}/{}'.format(current_path+1, len(paths)))     
@@ -117,8 +121,8 @@ def next_animation( index, animate_button, containers, paths, popup, current_pat
         endContainer.deselect_end(endColumn+1,endRow)
         #TODO add update to container name when next is pressed
         # container_label.config(text='Moving Container: {}'.format(containerArray[currentPath]))
-        stop_animation(current_path, index, animate_button, containers, paths, popup)
-        start_animation(current_path, index, animate_button, containers, paths, popup)
+        stop_animation(current_path, index, animate_button, containers, paths, popup,next_button)
+        start_animation(current_path, index, animate_button, containers, paths, popup,next_button)
 
 #popup for the main interface to use
 def show_animation(paths,filename):
@@ -143,8 +147,17 @@ def show_animation(paths,filename):
                 containers[max_row - row].append(container)
     
     max_row = 7
-    paths = [[(max_row - row, col) for row, col in path] for path in paths]
+    paths = [[[max_row - row, col] for row, col in path] for path in paths]
     index = 0
+    #data from calculate function comes as (column,row)
+    #swap because this function assumes (row,column)
+    for i in range(len(paths)):
+        for j in range(len(paths[i])):
+            temp_row = paths[i][j][0]
+            temp_column = paths[i][j][1]
+            paths[i][j][0]= temp_column
+            paths[i][j][1] = temp_row
+            
 
     current_path_label = Label(popup, text=f"Current Move: {current_path+1}/{len(paths)}")
     current_path_label.pack()
@@ -160,9 +173,13 @@ def show_animation(paths,filename):
 
     animate_button = Button(popup, text='Animate')
     animate_button.pack()
-    animate_button.config(command=lambda current_path=current_path, index=index, animate_button=animate_button, containers=containers, paths=paths, popup=popup: start_animation(current_path, index, animate_button, containers, paths, popup))
 
-    next_button = Button(popup, text='Next', command=lambda: next_animation( index, animate_button, containers, paths, popup, current_path_label, container_label))
+    next_button = Button(popup, text='Next')
     next_button.pack()
+
+    next_button.config (command=lambda index=index, animate_button = animate_button, containers= containers, paths=paths, popup = popup, current_path_label = current_path_label, container_label = container_label, next_button = next_button: next_animation( index, animate_button, containers, paths, popup, current_path_label, container_label,next_button))
+
+    animate_button.config(command=lambda current_path=current_path, index=index, animate_button=animate_button, containers=containers, paths=paths, popup=popup: start_animation(current_path, index, animate_button, containers, paths, popup,next_button))
+    
 
     popup.mainloop()

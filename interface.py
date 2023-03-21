@@ -65,10 +65,15 @@ def popup_logfile():
     popup_window.grid_columnconfigure(0, weight=1)
     popup_window.grid_columnconfigure(1, weight=1)
 
-def select_file():
+def select_load_file():
     filename = filedialog.askopenfilename()
     if filename:
         offloading_popup(filename)
+
+def select_balance_file():
+    filename = filedialog.askopenfilename()
+    if filename:
+        balance_container(filename)
 
 #This function is called once a file/manifest is selected 
 #This will generate the grid of containers which the user can select the containers hat need to be offloaded
@@ -111,7 +116,10 @@ def send_container_info(containers,filename):
     print(selected_containers) # this will be a function call to calculate the optimal path for now we hardcode path
     paths = [[(1,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0), (1,0)],
                 [(3,3), (3,4), (3,5), (4,5), (5,5), (5,4), (5,3), (4,3)],
-                [(0,1), (0,2), (0,3), (1,3)]]    
+                [(0,1), (0,2), (0,3), (1,3)]]
+    paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
+         [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
+         [[0, 1], [0, 2], [0, 3], [1, 3]]]    
     # # print(paths)
     #TODO wait for function to return paths and then call show_animation
     show_animation(paths,filename)
@@ -119,6 +127,14 @@ def send_container_info(containers,filename):
 def ok_action(entry_value, popup_window):
     logging.info({entry_value})
     popup_window.destroy()
+
+def balance_container(filename):
+    print("Call balance function")
+    paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
+         [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
+         [[0, 1], [0, 2], [0, 3], [1, 3]]]
+    # print(paths)
+    show_animation(paths,filename)
 
 #TODO clean up the main GUI where the user can select onload/offload and writing to logfile
 
@@ -136,15 +152,17 @@ canvas = tk.Canvas(main, height = HEIGHT, width=WIDTH)
 canvas.grid()
 
 #button that initiates onload/offload beginning with a file select
-loading_popup_button = tk.Button(main, text="onload/offload", command=select_file)
+loading_popup_button = tk.Button(main, text="onload/offload", command=select_load_file)
 loading_popup_button.grid()
+
+#button that initiates balance
+balance_button = tk.Button(main, text="balance", command=select_balance_file)
+balance_button.grid()
 
 #button that will popup a window where the user can write to the log file
 popup_button = tk.Button(main, text="logfile write", command=popup_logfile)
 popup_button.grid()
 
-# animation_popup = tk.Button(main, text="animation", command=show_animation)
-# animation_popup.grid()
 
 
 main.mainloop()
