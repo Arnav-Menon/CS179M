@@ -1,13 +1,17 @@
-# import numpy as np
+import itertools
 
-containers = {}
+dummyContainers = {}
+containers = []
 balanceMass = 0
-# update the weights to be in proper spots after moving them by modulo 6
-leftSideWeights = []
-rightSideWeights = []
+nanCounter = 0
+leftMass = 0
+rightMass = 0
+movesToMake = []
+visitedStates = []
+# default starting pos is first column, top row
+cranePos = [1, 3]
 
 def readfile(filename):
-
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
@@ -15,56 +19,98 @@ def readfile(filename):
                 parts = line.split(", ")
                 row, col = map(int, parts[0].strip()[1:-1].split(","))
                 weight = int(parts[1].strip()[1:-1])
-                # global containers
-                containers[row, col] = weight
+                if parts[-1] == "NAN":
+                    dummyContainers[row, col] = -1
+                    global nanCounter
+                    nanCounter += 1
+                else:
+                    dummyContainers[row, col] = weight
+
+# change containers from row formation to column formation
+def formatContainers():
+    # size = len(dummyContainers)
+    # print(size)
+    keys = list(dummyContainers.keys())
+    # print(keys)
+    numRows, numCols = keys[-1][0], keys[-1][1]
+    # print("NR", numRows, "NC", numCols)
+    for i in range(1, numCols+1):
+        j = 1
+        temp = []
+        while j < numRows+1:
+            # print(i, j)
+            temp.append(dummyContainers[j, i])
+            j += 1
+        containers.append(temp)
+
+    # print("--------------------------------------------------------")
+    # print(containers)
 
 def calcBalanceMass():
-    midway = 6
-    leftMass = rightMass = 0
+    midway = len(containers) // 2
+    global leftMass
+    global rightMass
 
-    for key, val in containers.items():
-        # check column value to see if mass should be added to left or right side
-        if key[1] <= midway:
-            leftMass += val
-            leftSideWeights.append(val)
-        else:
-            rightMass += val
-            rightSideWeights.append(val)
+    for col in containers[0:midway]:
+        leftMass += sum(col)
+    leftMass += nanCounter // 2
+
+    for col in containers[midway:]:
+        rightMass += sum(col)
+    rightMass += nanCounter // 2
+
+    # print(leftMass, rightMass)
 
     global balanceMass
     balanceMass = (leftMass + rightMass) // 2
-    # print(leftSideWeights)
-    # print(rightSideWeights)
 
-# TODO: stop when BalanceScore = min(left,right)/max(left,right) > 0.9
+def exploreMoves():
+    x, y = cranePos
+    print(x, y)
+    # loop over all columns and have those a possible starting moves
+    # then loop over all columns again and see if those are possible moves to drop the container
+    possibleMoves = []
+    pass
+
+'''
+input: 2 sets of coordinates
+output: manhattan distance between said coordinates
+'''
+def calcDistance(x1, y1, x2, y2):
+    return (y2-y1) + (x2-x1)
+
 def calcHN():
     hnCount = 0
-    leftMass = sum(leftSideWeights)
-    rightMass = sum(rightSideWeights)
-    weightsToMove = leftSideWeights if leftMass > rightMass else rightSideWeights
+    midway = len(containers) // 2
+    weightsToMove = containers[0:midway] if leftMass > rightMass else containers[midway:]
     deficit = balanceMass - min(leftMass, rightMass)
-    weightsToMove.sort(reverse=True)
+    weightsToMove = list(itertools.chain.from_iterable(weightsToMove))
 
     for w in weightsToMove:
         if w <= deficit and w > 0:
             deficit -= w
             hnCount += 1
+            print("\t", deficit)
 
     return hnCount
 
 if __name__ == "__main__":
     
-    filename = "ShipCase"
-    filetype = ".txt"
-    file_num = input("Select number 1-5 for approriate test file: ")
+    # filename = "ShipCase"
+    # filetype = ".txt"
+    # file_num = input("Select number 1-5 for approriate test file: ")
 
-    filename += file_num + filetype
+    # filename += file_num + filetype
+    filename = "ShipCase0.txt"
 
     readfile(filename)
 
+    formatContainers()
     # print(containers)
+    # exploreMoves()
     calcBalanceMass()
+    # print("LM", leftMass, "RM", rightMass)
 
-    print("Balance Mass", balanceMass)
-
-    print(calcHN())
+    # print("H(N):", calcHN())
+    exploreMoves()
+    
