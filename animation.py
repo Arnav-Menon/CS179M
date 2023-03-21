@@ -1,7 +1,5 @@
 from tkinter import *
 
-animation_running = False
-current_path = 0
 
 #intitalizes each grid for the animation
 class Container:
@@ -73,14 +71,14 @@ def animate(containers, paths, current_path, index,animate_button,popup):
     startContainer.select_start(startColumn+1,startRow)
     endContainer.select_end(endColumn+1,endRow)
 
-    popup.after(1000, current_container.deselect)
+    popup.after(100, current_container.deselect)
     index = (index + 1) % len(tempPath)
     if index == 0:
         animate_button_text = animate_button["text"]
         if animate_button_text == "Stop":
-            popup.after(1000, animate, containers, paths, current_path, index,animate_button, popup)
+            popup.after(100, animate, containers, paths, current_path, index,animate_button, popup)
     else:
-        popup.after(1000, animate, containers, paths, current_path, index,animate_button, popup)
+        popup.after(100, animate, containers, paths, current_path, index,animate_button, popup)
 
 def start_animation(current_path,index,animate_button,containers,paths,popup):
     global animation_id, animation_running
@@ -124,7 +122,8 @@ def next_animation( index, animate_button, containers, paths, popup, current_pat
 
 #popup for the main interface to use
 def show_animation(paths,filename):
-    filename = "ShipCase4.txt"
+    global current_path
+    current_path = 0
     popup = Toplevel()
     popup.title("Grid Animation")
 
@@ -144,17 +143,8 @@ def show_animation(paths,filename):
                 containers[max_row - row].append(container)
     
     max_row = 7
-
     paths = [[(max_row - row, col) for row, col in path] for path in paths]
-
     index = 0
-
-    animate_button = Button(popup, text='Animate')
-    animate_button.pack()
-
-    animate_button.config(command=lambda current_path=current_path, index=index, animate_button=animate_button, containers=containers, paths=paths, popup=popup: start_animation(current_path, index, animate_button, containers, paths, popup))
-
-
 
     current_path_label = Label(popup, text=f"Current Move: {current_path+1}/{len(paths)}")
     current_path_label.pack()
@@ -163,9 +153,14 @@ def show_animation(paths,filename):
     tempname = "Container"
     container_label = Label(popup, text=f"Moving Container: {tempname}")
     container_label.pack()
+
     tempname2 = "Boralius"
     ship_label = Label(popup, text=f"Ship: {tempname2}")
     ship_label.pack()
+
+    animate_button = Button(popup, text='Animate')
+    animate_button.pack()
+    animate_button.config(command=lambda current_path=current_path, index=index, animate_button=animate_button, containers=containers, paths=paths, popup=popup: start_animation(current_path, index, animate_button, containers, paths, popup))
 
     next_button = Button(popup, text='Next', command=lambda: next_animation( index, animate_button, containers, paths, popup, current_path_label, container_label))
     next_button.pack()
