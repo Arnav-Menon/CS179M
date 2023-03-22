@@ -13,6 +13,9 @@ namesOfContainers = []
 visitedStates = []
 createdStates = []
 exploreStates = []
+pathStates = []
+visitedPaths = []
+createdPaths = []
 maxSize = 1
 
 class Node:
@@ -37,6 +40,9 @@ class Node:
         self.containerName = ""
         self.namesOfContainers = names
         self.parent = parent
+        self.start = []
+        self.goal = []
+        self.curPos = []
 
     def exploreMoves(self, f, nanCounter):
         y, x = self.cranePos
@@ -334,7 +340,7 @@ class Puzzle:
         node.balanceMass = (node.leftMass + node.rightMass) // 2
         self.balanceMass = node.balanceMass
 
-    def solve(self):
+    def balance(self):
         f = open("output.txt", "w")
 
         while len(exploreStates) != 0:
@@ -354,13 +360,136 @@ class Puzzle:
                 print(node.shipLayout)
                 print(lowerWeightLimit, node.leftMass, node.rightMass, self.balanceMass)
                 moves, names = self.printSolution(node)
-                return (node.gn, moves, names)
+                return (node.gn, moves, names, node.shipLayout)
 
             node.exploreMoves(f, self.nanCounter)
             # print("--------------------------------------------------------------------")
             f.write("\n--------------------------------------------------------------------\n\n")
 
         f.close()
+
+    def onloadOffload(self):
+        while len(exploreStates) != 0:
+            node = hq.heappop(exploreStates)
+
+            hq.heappush(visitedStates, node)
+
+    def findPath(self, goalState):
+        paths = []
+
+        while len(pathStates) != 0:
+            node = hq.heappop(pathStates)
+            print("\t", node.shipLayout)
+            print("\t", node.curPos)
+            print("\t", node.start)
+            print("\t", node.goal)
+
+            if node.shipLayout == goalState:
+                while node.parent:
+                    paths.append(node.curPos)
+                    node = node.parent
+
+                return paths[::-1]
+            
+            y, x = node.curPos
+            possible_moves = [[y, x-1], [y, x+1], [y-1, x], [y+1, x]]
+            # possible_moves = [[x-1, y], [x+1, y], [x, y-1], [x, y+1]]
+            actualMoves = self.validMoves(possible_moves, node.shipLayout)
+            print(possible_moves)
+            print(actualMoves)
+            for m in actualMoves:
+                # if that position we want to go to isn't blocked by another container
+                if node.shipLayout[m[0]][m[1]] == 0:
+                    temp = node.shipLayout[node.curPos[0]][node.curPos[1]]
+                    node.shipLayout[node.curPos[0]][node.curPos[1]] = node.shipLayout[m[0]][m[1]]
+                    node.shipLayout[m[0]][m[1]] = temp
+                    print("Before curpos", node.curPos)
+                    node.curPos = m
+                    print("ShipLayout", node.shipLayout)
+                    print("After curpos", node.curPos)
+
+                    if node.shipLayout not in createdPaths:
+                        child = Node(balanceMass=node.balanceMass, shipLayout=node.shipLayout, parent=node, names=[])
+                        child.curPos = node.curPos
+                        hq.heappush(pathStates, child)
+                        createdPaths.append(node.shipLayout)
+
+                print("---------")
+
+            hq.heappush(visitedPaths, node)
+            print("------------------------------------------------------------")
+
+    def validMoves(self, possibleMoves, shipLayout):
+        actualMoves = []
+        width, height = len(shipLayout), len(shipLayout[0])
+        print(width, height, shipLayout)
+        for m in possibleMoves:
+            # print(m)
+            # if move is within the board and isn't a NAN square
+            if 0 <= m[0] < width and 0 <= m[1] < height and shipLayout[m[0]][m[1]] != -1:
+                # print("\t\t", m)
+                # print(shipLayout[m[0]][m[1]])
+                actualMoves.append(m)
+
+        return actualMoves
+
+    def findPath2(self, moves, shipLayout):
+        full_paths = []
+        i = 0
+        for m in moves:
+            temp = []
+            startCopy = m[0]
+            endCopy = m[1]
+            start = m[0]
+            end = m[1]
+            temp.append(startCopy[:])
+            # print(m)
+            # print("\t", start, end)
+
+            while start != end:
+                # go right
+                if start[0] < end[0]:
+                    test = [start[0] + 1, start[1]]
+                    if shipLayout[test[0]][test[1]] == 0:
+                        start = test
+                    # something in the way, go up and try again
+                    else:
+                        start[1] += 1
+                    
+                    temp.append(start[:])
+                    continue
+
+                # go left
+                elif start[0] > end[0]:
+                    test = [start[0] - 1, start[1]]
+                    if shipLayout[test[0]][test[1]] == 0:
+                        start = test
+                    # something in the way, go up and try again
+                    else:
+                        start[1] += 1
+                    
+                    temp.append(start[:])
+                    continue
+                
+                # go down
+                elif start[1] > end[1]:
+                    test = [start[0], start[1] - 1]
+                    if shipLayout[test[0]][test[1]] == 0:
+                        start = test
+                    # something in the way, go down and try again
+                    else:
+                        start[1] -= 1
+                    
+                    temp.append(start[:])
+                    continue
+
+            full_paths.append(temp)
+            # swap containers to update change
+            t = shipLayout[startCopy[0]][startCopy[1]]
+            shipLayout[startCopy[0]][startCopy[1]] = 0
+            shipLayout[endCopy[0]][endCopy[1]] = t
+
+        return full_paths
 
     def printSolution(self, endNode):
         nodes = []
@@ -383,6 +512,12 @@ class Puzzle:
             print("\t\t", n.namesOfContainers)
             movesToMake.append(n.movesToMake)
             namesOfContainers.append(n.containerName)
+            newNode = Node(balanceMass=0, shipLayout=n.parent.shipLayout, parent=None, names=[])
+            newNode.curPos = n.movesToMake[0]
+            newNode.start = n.movesToMake[0]
+            newNode.goal = n.movesToMake[1]
+            # pathStates.append(newNode)
+            hq.heappush(pathStates, newNode)
             # print("\t\t", n.movesToMake)
             # print(n.calcHN(n.shipLayout, n.leftMass, n.rightMass))
 
@@ -395,7 +530,7 @@ if __name__ == "__main__":
     # file_num = input("Select number 1-5 for approriate test file: ")
 
     # filename += file_num + filetype
-    filename = "ShipCase0.txt"
+    filename = "ShipCase8.txt"
 
     # node = Node(None)
     puzzle = Puzzle()
@@ -411,25 +546,55 @@ if __name__ == "__main__":
     # print(containers)
     # print(namesOfContainers)
 
-    puzzle.calcBalanceMass(node)
-    puzzle.heavySide = 0 if node.leftMass > node.rightMass else 1
-    # print(puzzle.heavySide)
-    print("LM", node.leftMass, "RM", node.rightMass)
+    # mode = int(input("Would you like to balance the ship or onload/offload? 1 for balance, 2 for onload/offload"))
+    mode = 1
 
-    # print("H(N):", node.calcHN())
-    # node.exploreMoves()
+    # mode == 1, balance
+    if mode == 1:
+        puzzle.calcBalanceMass(node)
+        puzzle.heavySide = 0 if node.leftMass > node.rightMass else 1
+        # print(puzzle.heavySide)
+        print("LM", node.leftMass, "RM", node.rightMass)
 
-    start = time.time()
-    hq.heappush(exploreStates, node)
+        # print("H(N):", node.calcHN())
+        # node.exploreMoves()
 
-    depth, moves, names = puzzle.solve()
+        start = time.time()
+        hq.heappush(exploreStates, node)
 
-    print("Took", depth, "levels to find solution")
-    print(f"Took {time.time() - start:.1f} seconds")
-    print("Max size", maxSize)
-    print(node.shipLayout)
-    print(moves)
-    print(names)
-    # print(len(createdStates))
-    # for x in createdStates:
-        # print(x, "\n")
+        depth, moves, names, goalState = puzzle.balance()
+
+        print(node.shipLayout)
+        # print(moves)
+        # print(names)
+        # print(pathStates)
+        # time.sleep(1)
+        print("\n\n\n")
+        full_paths = puzzle.findPath2(moves, node.shipLayout)
+        for i, f in enumerate(full_paths):
+            print(f"{names[i]} --> {f}")
+
+        print("Took", depth, "levels to find solution")
+        print(f"Took {time.time() - start:.1f} seconds")
+        print("Max size", maxSize)
+        print("GOAL STATE", goalState)
+
+    # mode == 2, onload/offload
+    else:
+        onloads = []
+        offloads = []
+        on = input("Enter comma separated values for names of containers you would like to LOAD ONTO the ship: ").split(",")
+        for x in on:
+            onloads.append(x.strip())
+            
+        off = input("Enter comma separated values for names of containers you would like to OFFLOAD from ship: ").split(",")
+        for x in off:
+            offloads.append(x.strip())
+        
+        print("ON", onloads)
+        print("OFF", offloads)
+
+        start = time.time()
+        hq.heappush(exploreStates, node)
+
+        puzzle.onloadOffload()
