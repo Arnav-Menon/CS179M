@@ -1,5 +1,6 @@
 from tkinter import *
-
+from tkinter import messagebox
+from tkinter import font
 
 #intitalizes each grid for the animation
 class Container:
@@ -109,11 +110,23 @@ def start_animation(current_path,index,animate_button,containers,paths,popup,nex
     global animation_id, animation_running
     animation_running = True
     if (current_path >= len(paths)-1):
-        next_button.config(text='End Program', command=popup.destroy)
+        next_button.config(text='End Program', command=lambda:reminder(popup))
     if  animation_running:
         animate_button.config(text='Stop', command=lambda: stop_animation(current_path,index,animate_button,containers,paths,popup,next_button))
         animate(containers, paths, current_path, index,animate_button,popup)
     
+def reminder(popup):
+    # popup.destroy()
+    # reminder_window = Toplevel()
+    # reminder_window.title("Reminder")
+    # reminder_title = Label(reminder_window, text="Please email the updated manifest to the captain")
+    # reminder_title.pack()
+    # ok_button = Button(reminder_window, text="OK", command=reminder_window.destroy)
+    # ok_button.pack()
+    # custom_font = ("Arial Bold", 30)
+    # font1 = font.Font(name='TkCaptionFont', exists=True)
+    # font1.config(family='Arial Bold"', size=50)
+    messagebox.showinfo("Reminder", "Please email the updated manifest to the captain")
 
 def stop_animation(current_path,index,animate_button,containers,paths,popup,next_button):
     global animation_id, animation_running
