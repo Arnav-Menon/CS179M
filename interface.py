@@ -12,7 +12,12 @@ from temp import calculate
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
 
-logging.basicConfig(filename="logfile.txt", level=logging.INFO, format='%(asctime)s %(message)s')
+with open("logfiles.txt", "r") as f:
+    lines = f.readlines()
+    logfile = lines[-1]
+    logfile =logfile.rstrip()
+
+logging.basicConfig(filename=logfile, level=logging.INFO, format='%(asctime)s %(message)s')
 
 #create a Container for each ContainersInfo in the grid
 #Each sqaure will have the row, column, name and ability to toogle the button on and off stored 
@@ -149,6 +154,9 @@ def newLogFile(log_popuo,logfileYear):
     root_logger.addHandler(handler)
     formatter = logging.Formatter('%(asctime)s %(message)s')
     handler.setFormatter(formatter)
+    print(logfile)
+    with open('logfiles.txt', 'a') as f:
+        f.write(logfile)
     log_popuo.destroy()
 
 HEIGHT = 900
