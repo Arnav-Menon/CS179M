@@ -107,13 +107,12 @@ def animate(containers, paths, current_path, index,animate_button,popup):
 #next_button becomes end program button if user has reached end of the list of moves
 def start_animation(current_path,index,animate_button,containers,paths,popup,next_button):
     global animation_id, animation_running
-    animation_running = False
+    animation_running = True
     if (current_path >= len(paths)-1):
         next_button.config(text='End Program', command=popup.destroy)
-    if not animation_running:
+    if  animation_running:
         animate_button.config(text='Stop', command=lambda: stop_animation(current_path,index,animate_button,containers,paths,popup,next_button))
-        animation_running = True
-        animation_id = animate(containers, paths, current_path, index,animate_button,popup)
+        animate(containers, paths, current_path, index,animate_button,popup)
     
 
 def stop_animation(current_path,index,animate_button,containers,paths,popup,next_button):

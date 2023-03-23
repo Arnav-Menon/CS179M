@@ -146,31 +146,34 @@ def balance_container(filename):
 
 #TODO clean up the main GUI where the user can select onload/offload and writing to logfile
 
-HEIGHT = 700
-WIDTH = 1200
+HEIGHT = 1000
+WIDTH = 1300
 
 main = tk.Tk()
+main.geometry("1350x1000")
+# set the background color of the main window
+main.configure(bg='gray30')
 
-#placeholder name
-greeting = tk.Label(text="Crane Operation Optimizer")
-greeting.grid()
-
-#creates the window size
-canvas = tk.Canvas(main, height = HEIGHT, width=WIDTH)
-canvas.grid()
-
-#button that initiates onload/offload beginning with a file select
-loading_popup_button = tk.Button(main, text="onload/offload", command=select_load_file)
-loading_popup_button.grid()
-
-#button that initiates balance
-balance_button = tk.Button(main, text="balance", command=select_balance_file)
-balance_button.grid()
-
-#button that will popup a window where the user can write to the log file
-popup_button = tk.Button(main, text="logfile write", command=popup_logfile)
-popup_button.grid()
+# create a label for the title
+title_label = tk.Label(main, text="Crane Operation Optimizer", font=("Arial Bold", 30), bg='gray30',fg='lightcyan3')
+title_label.pack(pady=(100, 0))
 
 
+# create a frame to hold the buttons
+button_frame = tk.Frame(main, bg='gray30')
+button_frame.pack(expand=True, fill=tk.BOTH)
+
+
+# button that initiates onload/offload beginning with a file select
+loading_popup_button = tk.Button(button_frame, text="onload/offload", font=("Arial Bold", 15), command=select_load_file, bg='white',width= 35, height =10)
+loading_popup_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
+
+# button that initiates balance
+balance_button = tk.Button(button_frame, text="balance", font=("Arial Bold", 15), command=select_balance_file, bg='white',width= 35, height =10)
+balance_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
+
+# button that will popup a window where the user can write to the log file
+popup_button = tk.Button(button_frame, text="logfile write", font=("Arial Bold", 15),command=popup_logfile, bg='white',width= 35, height =10)
+popup_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
 
 main.mainloop()
