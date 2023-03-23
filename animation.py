@@ -20,7 +20,6 @@ class Container:
             self.color ='white'
         else:
             self.color = 'green'
-        # self.color = 'black' if self.name == 'NAN' elif self.name == "buffer" else 'white'
         self.rect = self.master.create_rectangle(self.column*50, self.row*50, (self.column+1)*50, (self.row+1)*50, fill=self.color)
         self.start_text_id = None  # save the ID of the start text
         self.end_text_id = None  # save the ID of the end text
@@ -116,22 +115,14 @@ def start_animation(current_path,index,animate_button,containers,paths,popup,nex
         animate(containers, paths, current_path, index,animate_button,popup)
     
 def reminder(popup):
-    # popup.destroy()
-    # reminder_window = Toplevel()
-    # reminder_window.title("Reminder")
-    # reminder_title = Label(reminder_window, text="Please email the updated manifest to the captain")
-    # reminder_title.pack()
-    # ok_button = Button(reminder_window, text="OK", command=reminder_window.destroy)
-    # ok_button.pack()
-    # custom_font = ("Arial Bold", 30)
-    # font1 = font.Font(name='TkCaptionFont', exists=True)
-    # font1.config(family='Arial Bold"', size=50)
+    popup.destroy()
     messagebox.showinfo("Reminder", "Please email the updated manifest to the captain")
 
 def stop_animation(current_path,index,animate_button,containers,paths,popup,next_button):
     global animation_id, animation_running
-    animate_button.config(text='Animate', command=lambda: start_animation(current_path, index, animate_button, containers, paths, popup,next_button))
     animation_running = False
+    animate_button.config(text='Animate', command=lambda: start_animation(current_path, index, animate_button, containers, paths, popup,next_button))
+
 
 #button functionality that moves onto to the next move
 #deletes old start and end text
@@ -167,10 +158,7 @@ def next_animation( index, animate_button, containers, paths, popup, current_pat
             
         for i in range(len(containers)):
             for j in range(len(containers[i])):
-                # print(containers[i][j])
                 containers[i][j].deselect()
-        #TODO add update to container name when next is pressed
-        # container_label.config(text='Moving Container: {}'.format(containerArray[currentPath]))
         stop_animation(current_path, index, animate_button, containers, paths, popup,next_button)
         start_animation(current_path, index, animate_button, containers, paths, popup,next_button)
 

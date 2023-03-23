@@ -6,12 +6,13 @@ from tkinter import filedialog
 from collections import namedtuple
 from animation import show_animation
 import tkinter.font as tkFont
+from tkinter import messagebox
 from temp import calculate
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
 
-logging.basicConfig(filename='logfile.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename="logfile.txt", level=logging.INFO, format='%(asctime)s %(message)s')
 
 #create a Container for each ContainersInfo in the grid
 #Each sqaure will have the row, column, name and ability to toogle the button on and off stored 
@@ -100,7 +101,7 @@ def offloading_popup(filename):
                 container = Container(frame, max_row - row +1, col, name)
                 containers.append(container)
 
-    ok_button = tk.Button(frame, text="OK", command=lambda: logging_ok_button(containers,filename,top))
+    ok_button = tk.Button(frame, text="OK", command=lambda: loading_ok_button(containers,filename,top))
     ok_button.grid(row=len(containers) + 1, column=0, padx=5, pady=5)
 
     cancel_button = tk.Button(frame, text="Cancel", command=top.destroy)
@@ -128,7 +129,7 @@ def ok_action(entry_value, popup_window):
     logging.info({entry_value})
     popup_window.destroy()
 
-def logging_ok_button(containers,filename,top):
+def loading_ok_button(containers,filename,top):
     top.destroy()
     send_container_info(containers,filename)
 
@@ -141,7 +142,14 @@ def balance_container(filename):
     containerNames = ["Rat","Dog","Corn","FLY"]
     show_animation(paths,filename,containerNames)
 
-#TODO clean up the main GUI where the user can select onload/offload and writing to logfile
+def newLogFile(log_popuo,logfileYear):
+    logfile = "logfile" + logfileYear.get() + ".txt"
+    root_logger = logging.getLogger()
+    handler = logging.FileHandler(logfile)
+    root_logger.addHandler(handler)
+    formatter = logging.Formatter('%(asctime)s %(message)s')
+    handler.setFormatter(formatter)
+    log_popuo.destroy()
 
 HEIGHT = 900
 WIDTH = 1300
@@ -176,5 +184,22 @@ balance_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
 # button that will popup a window where the user can write to the log file
 popup_button = tk.Button(main, text="logfile write", font=("Arial Bold", 15),command=popup_logfile, bg='white',width= 35, height =10)
 popup_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
+
+
+response = messagebox.askyesno("New Logfile", "Do you want to start a new logfile?")
+
+if response:
+    log_popuo = Toplevel()
+    logfileYear = tk.StringVar() 
+    title_label = tk.Label(log_popuo, text="The log file has the logical year appended to its name, What year do you want the log file?")
+    title_label.pack(pady=(47, 0))
+    logfileYear_field = tk.Entry(log_popuo, textvariable=logfileYear, width = 100, highlightcolor="black",highlightthickness=1)
+    logfileYear_field.pack()
+    ok = tk.Button(log_popuo, text="OK", command=lambda: newLogFile(log_popuo,logfileYear) )
+    ok.pack()
+
+    cancel = tk.Button(log_popuo, text="Cancel", command=log_popuo.destroy)
+    cancel.pack()
+   
 
 main.mainloop()
