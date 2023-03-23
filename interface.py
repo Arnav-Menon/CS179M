@@ -5,6 +5,7 @@ import logging
 from tkinter import filedialog
 from collections import namedtuple
 from animation import show_animation
+from temp import calculate
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
@@ -114,15 +115,13 @@ def offloading_popup(filename):
 def send_container_info(containers,filename):
     selected_containers = [ContainersInfo(container.get_name(), container.get_coordinates()) for container in containers if container.selected]
     print(selected_containers) # this will be a function call to calculate the optimal path for now we hardcode path
-    paths = [[(1,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0), (1,0)],
-                [(3,3), (3,4), (3,5), (4,5), (5,5), (5,4), (5,3), (4,3)],
-                [(0,1), (0,2), (0,3), (1,3)]]
-    paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
-         [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
-         [[0, 1], [0, 2], [0, 3], [1, 3]]]    
-    # # print(paths)
+    paths = [[[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,3],[2,3],[2,2],[3,2],[4,2],[5,2],[5,1],[5,0]],
+             [[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0]],
+             [[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,3],[1,3],[1,4],[0,4],[0,5],[0,6],[0,7],[0,8]],
+             [[8,0],[8,1],[8,2],[7,2]]]
     #TODO wait for function to return paths and then call show_animation
-    show_animation(paths,filename)
+    containerNames = ["Rat","Dog","Corn","FLY"]
+    show_animation(paths,filename,containerNames)
 
 def ok_action(entry_value, popup_window):
     logging.info({entry_value})
@@ -134,15 +133,21 @@ def logging_ok_button(containers,filename,top):
 
 def balance_container(filename):
     print("Call balance function")
-    paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
-         [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
-         [[0, 1], [0, 2], [0, 3], [1, 3]]]
-    show_animation(paths,filename)
+    # paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
+    #      [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
+    #      [[0, 1], [0, 2], [0, 3], [1, 3]], 
+    #      [[8,0],[8,1],[8,2],[7,2]]]
+    paths = [[[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,3],[2,3],[2,2],[3,2],[4,2],[5,2],[5,1],[5,0]],
+             [[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0]],
+             [[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,3],[1,3],[1,4],[0,4],[0,5],[0,6],[0,7],[0,8]],
+             [[8,0],[8,1],[8,2],[7,2]]]
+    containerNames = ["Rat","Dog","Corn","FLY"]
+    show_animation(paths,filename,containerNames)
 
 #TODO clean up the main GUI where the user can select onload/offload and writing to logfile
 
-HEIGHT = 1000
-WIDTH = 1500
+HEIGHT = 700
+WIDTH = 1200
 
 main = tk.Tk()
 
