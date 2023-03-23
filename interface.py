@@ -1,10 +1,11 @@
 import tkinter as tk
-import _tkinter
+from tkinter import font
 from tkinter import*
 import logging
 from tkinter import filedialog
 from collections import namedtuple
 from animation import show_animation
+import tkinter.font as tkFont
 from temp import calculate
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
@@ -133,10 +134,6 @@ def logging_ok_button(containers,filename,top):
 
 def balance_container(filename):
     print("Call balance function")
-    # paths = [[[1, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0]],
-    #      [[3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3], [4, 3]],
-    #      [[0, 1], [0, 2], [0, 3], [1, 3]], 
-    #      [[8,0],[8,1],[8,2],[7,2]]]
     paths = [[[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,3],[2,3],[2,2],[3,2],[4,2],[5,2],[5,1],[5,0]],
              [[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0]],
              [[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,3],[1,3],[1,4],[0,4],[0,5],[0,6],[0,7],[0,8]],
@@ -146,34 +143,38 @@ def balance_container(filename):
 
 #TODO clean up the main GUI where the user can select onload/offload and writing to logfile
 
-HEIGHT = 1000
+HEIGHT = 900
 WIDTH = 1300
 
 main = tk.Tk()
-main.geometry("1350x1000")
+main.geometry("1350x900")
 # set the background color of the main window
 main.configure(bg='gray30')
 
+
+bg_canvas = tk.Canvas(main, width=5000, height=5000, bg='gray30')
+bg_canvas.place(relx=0, rely=0, anchor=tk.NW)
+
+bg_image = tk.PhotoImage(file="crane.png")
+bg_image_resized = bg_image.zoom(2)
+bg_canvas.create_image(0, 0, anchor=tk.NW, image=bg_image_resized)
+
+apr_font = tkFont.Font(family="Comic Sans MS", size=30, weight= "bold")
 # create a label for the title
-title_label = tk.Label(main, text="Crane Operation Optimizer", font=("Arial Bold", 30), bg='gray30',fg='lightcyan3')
-title_label.pack(pady=(100, 0))
-
-
-# create a frame to hold the buttons
-button_frame = tk.Frame(main, bg='gray30')
-button_frame.pack(expand=True, fill=tk.BOTH)
+title_label = tk.Label(main, text="Crane Operation Optimizer", font=apr_font, bg='gray30',fg='lightcyan3')
+title_label.pack(pady=(47, 0))
 
 
 # button that initiates onload/offload beginning with a file select
-loading_popup_button = tk.Button(button_frame, text="onload/offload", font=("Arial Bold", 15), command=select_load_file, bg='white',width= 35, height =10)
+loading_popup_button = tk.Button(main, text="onload/offload", font=("Arial Bold", 15), command=select_load_file, bg='white',width= 35, height =10)
 loading_popup_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
 
 # button that initiates balance
-balance_button = tk.Button(button_frame, text="balance", font=("Arial Bold", 15), command=select_balance_file, bg='white',width= 35, height =10)
+balance_button = tk.Button(main, text="balance", font=("Arial Bold", 15), command=select_balance_file, bg='white',width= 35, height =10)
 balance_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
 
 # button that will popup a window where the user can write to the log file
-popup_button = tk.Button(button_frame, text="logfile write", font=("Arial Bold", 15),command=popup_logfile, bg='white',width= 35, height =10)
+popup_button = tk.Button(main, text="logfile write", font=("Arial Bold", 15),command=popup_logfile, bg='white',width= 35, height =10)
 popup_button.pack(side=tk.LEFT, padx=5, pady=5, expand=True)
 
 main.mainloop()
