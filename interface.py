@@ -7,7 +7,7 @@ from collections import namedtuple
 from animation import show_animation
 import tkinter.font as tkFont
 from tkinter import messagebox
-from temp import calculate
+from main import calculate
 
 #create a struct/tuple that can be used to store the name and coordinates of containers we want to offload
 ContainersInfo = namedtuple('ContainersInfo', ['name', 'coordinates'])
@@ -139,12 +139,13 @@ def loading_ok_button(containers,filename,top):
     send_container_info(containers,filename)
 
 def balance_container(filename):
-    print("Call balance function")
-    paths = [[[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,3],[2,3],[2,2],[3,2],[4,2],[5,2],[5,1],[5,0]],
-             [[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0]],
-             [[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,3],[1,3],[1,4],[0,4],[0,5],[0,6],[0,7],[0,8]],
-             [[8,0],[8,1],[8,2],[7,2]]]
-    containerNames = ["Rat","Dog","Corn","FLY"]
+    # print("Call balance function")
+    # paths = [[[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,3],[2,3],[2,2],[3,2],[4,2],[5,2],[5,1],[5,0]],
+    #          [[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0]],
+    #          [[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,3],[1,3],[1,4],[0,4],[0,5],[0,6],[0,7],[0,8]],
+    #          [[8,0],[8,1],[8,2],[7,2]]]
+    paths,containerNames = calculate(filename)
+    # containerNames = ["Rat","Dog","Corn","FLY"]
     show_animation(paths,filename,containerNames)
 
 def newLogFile(log_popuo,logfileYear):
