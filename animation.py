@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import font
+from main import reset_variables
 
 #intitalizes each grid for the animation
 class Container:
@@ -116,6 +117,7 @@ def start_animation(current_path,index,animate_button,containers,paths,popup,nex
     
 def reminder(popup):
     popup.destroy()
+    reset_variables()
     messagebox.showinfo("Reminder", "Please email the updated manifest to the captain")
 
 def stop_animation(current_path,index,animate_button,containers,paths,popup,next_button):
