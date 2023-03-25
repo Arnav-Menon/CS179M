@@ -422,7 +422,6 @@ class Puzzle:
         f.close()
         return filename, f
 
-# if __name__ == "__main__":
 def calculate(filename):
     
     shipName = filename.split(".")[0]
