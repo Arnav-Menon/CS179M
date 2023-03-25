@@ -1,96 +1,178 @@
-def exploreMoves(self, nanCounter):
-    y, x = self.cranePos
+# HEAVY HEAVY HEAVY inspo from CS170 8 Puzzle project, linked here:
+# https://github.com/Arnav-Menon/CS170/blob/523587237ddec22717e4973c0cd4aa29417ec87c/8puzzle/main.py
 
-    # loop over all columns and have those a possible starting moves
-    # then loop over all columns again and see if those are possible moves to drop the container
-    possibleMoves = []
-    containersToMove = []
-    for i in range(0, len(containers)):
-        possibleMoves.append([x+i, y])
+
+import itertools
+import heapq as hq
+import copy
+import time
+
+dummyContainers = {}
+containers = []
+namesOfContainers = []
+visitedStates = []
+createdStates = []
+exploreStates = []
+pathStates = []
+visitedPaths = []
+createdPaths = []
+onOffShipsDone = []
+createdOnOffShips = []
+maxSize = 1
+
+class Node:
+    def __init__(self, balanceMass, shipLayout, parent, names):
+        self.shipLayout = shipLayout
+        self.balanceMass = balanceMass
+        self.leftMass = 0
+        self.rightMass = 0
+        self.movesToMake = [[], []]
+        self.possibleMoves = []
+        # default starting pos is first column, top row
+        self.cranePos = [12,0]
+        self.fn = 0
+        self.gn = 0
+        self.hn = 0
+        # this is which container is held by the crane, if any
+        self.containerHeld = []
+        self.containerName = ""
+        self.namesOfContainers = names
+        self.parent = parent
+        self.start = []
+        self.goal = []
+        self.curPos = []
+        self.path = []
+        self.endCoordinate = []
+        self.onload = False
+
+    def exploreOnloadOffload(self, onloads, offloads):
+        y, x = self.cranePos
+
+        possibleMoves = [[x-1, y], [x+1, y], [x, y-1], [x, y+1]]
+        actualMoves = self.validMoves(possibleMoves, self.shipLayout)
+
+        if len(offloads) > 0:
+            startContainer = offloads[0]
+        else:
+            startContainer = onloads[0]
+
+        self.endCoordinate = [startContainer[1], startContainer[0]]
+
+        for m in actualMoves:
+            pass
+
+    def validMoves(self, possibleMoves, shipLayout):
+        actualMoves = []
+        width, height = len(shipLayout), len(shipLayout[0])
+        for m in possibleMoves:
+            # if move is within the board and isn't a NAN square
+            if 0 <= m[0] < width and 0 <= m[1] < height and shipLayout[m[0]][m[1]] != -1:
+                actualMoves.append(m)
+
+        return actualMoves   
+
+    '''
+    input: 2 sets of coordinates
+    output: manhattan distance between said coordinates
+    '''
+    def calcDistance(self, x1, y1, x2, y2):
+        return (y2-y1) + (x2-x1)
+
+    def calcHN(self, shipLayout, leftMass, rightMass):
+        hnCount = 0
+        midway = len(shipLayout) // 2
+        weightsToMove = shipLayout[0:midway] if leftMass > rightMass else shipLayout[midway:]
+        otherSide = shipLayout[midway:] if leftMass > rightMass else shipLayout[0:midway]
+        deficit = self.balanceMass - min(leftMass, rightMass)
+        weightsToMoveCopy = list(itertools.chain.from_iterable(weightsToMove))
+
+        for w in weightsToMoveCopy:
+            if w <= deficit and w > 0:
+                deficit -= w
+                hnCount += 1
+
+        return hnCount
     
-    for m in possibleMoves:
-        containerHeld = self.pickupContainer(m, self.shipLayout)
-        if containerHeld != None:
-            containersToMove.append(containerHeld)
+    def index_2d(self, otherList, element):
+        for i, x in enumerate(otherList):
+            if element in x:
+                return (i, x.index(element))
+    
+    def updateLeftRightWeights(self, nanCounter):
+        midway = len(self.shipLayout) // 2
 
-    self.possibleMoves = possibleMoves
+        # calc mass of left side
+        for col in self.shipLayout[0:midway]:
+            self.leftMass += sum(col)
+        self.leftMass += nanCounter // 2
 
-    for container in containersToMove:
+        # calc mass of right side
+        for col in self.shipLayout[midway:]:
+            self.rightMass += sum(col)
+        self.rightMass += nanCounter // 2
+    
+    # need this wrapper for hq.heappush() call
+    def __lt__(self, other):
+        return self.fn < other.fn
 
-        for move in self.possibleMoves:
-            child = copy.deepcopy(self)
+if __name__ == "__main__":
+    
+    filename = "ShipCase"
+    filetype = ".txt"
+    file_num = input("Select number 1-5 for approriate test file: ")
 
-            newNode = Node(self.balanceMass, self.shipLayout, self, child.namesOfContainers)
-            newNode.gn = self.gn + 1
-            newNode.possibleMoves = self.getDropoffLocs(container, move, self.shipLayout)
-            # use this condition for drop off, don't want to drop off in same column
-            if container[0] != move[0]:
-                updateMove, newNode.shipLayout = newNode.dropContainer(move, container, child.shipLayout)
-                newNode.updateLeftRightWeights(nanCounter)
+    filename += file_num + filetype
+    # filename = "ShipCase4.txt"
 
-                newNode.hn = self.calcHN(newNode.shipLayout, newNode.leftMass, newNode.rightMass)
-                newNode.fn = newNode.gn + newNode.hn
-                visitedShips = [n.shipLayout for n in visitedStates]
+    puzzle = Puzzle()
+    nanCounter = puzzle.readfile(filename)
+    puzzle.formatContainers()
+    puzzle.nanCounter = nanCounter
+    node = Node(0, containers, None, namesOfContainers)
+    node.shipLayout = containers
 
-                #  and newNode.shipLayout not in createdStates
-                if newNode.shipLayout not in visitedShips and newNode.shipLayout not in createdStates:
-                    m = list(container)
-                    newNode.movesToMake[0] = m
-                    newNode.movesToMake[1] = updateMove
-                    
-                    # update this with container name
-                    newNode.containerName = newNode.namesOfContainers[m[0]][m[1]]
-                    # update namesOfContainers to reflect updated container pos
-                    newNode.namesOfContainers = newNode.updateNamesOfContainers(m, updateMove)
-                    
-                    hq.heappush(exploreStates, newNode)
-                    createdStates.append(newNode.shipLayout)
-                    global maxSize
-                    maxSize = max(maxSize, len(exploreStates))
+    # mode = int(input("Would you like to balance the ship or onload/offload? 1 for balance, 2 for onload/offload"))
+    mode = 1
 
-def updateNamesOfContainers(self, start, end):
-    temp = self.namesOfContainers[end[0]][end[1]]
-    self.namesOfContainers[end[0]][end[1]] = self.namesOfContainers[start[0]][start[1]]
-    self.namesOfContainers[start[0]][start[1]] = temp
-    return self.namesOfContainers
+    # mode == 1, balance
+    if mode == 1:
+        puzzle.calcBalanceMass(node)
+        puzzle.heavySide = 0 if node.leftMass > node.rightMass else 1
 
-# drop container into empty spot
-def dropContainer(self, move, containerHeld, shipLayout):
-    column = shipLayout[move[0]]
-    locToDrop = [-1, -1]
+        start = time.time()
+        hq.heappush(exploreStates, node)
 
-    # find actual row value to drop container
-    for i, c in enumerate(column):
-        # second condition is so we don't "put" the contianer in an empty position above where it was in the same column
-        if c == 0:
-            locToDrop[1] = i
-            break
+        depth, moves, names, goalState = puzzle.balance()
 
-    # means no empty spot in this column
-    if locToDrop[1] == -1:
-        return (locToDrop, shipLayout)
+        full_paths = puzzle.findPath2(moves, node.shipLayout)
+        for i, f in enumerate(full_paths):
+            print(f"{names[i]} --> {f}")
+
+        print("Took", depth, "levels to find solution")
+        print(f"Took {time.time() - start:.1f} seconds")
+
+    # mode == 2, onload/offload
+    else:
+        onloads = []
+        offloads = []
+        on = input("Enter comma separated values for names of containers you would like to LOAD ONTO the ship: ").split(",")
+        for x in on:
+            onloads.append(x.strip().capitalize())
+            
+        off = input("Enter comma separated values for names of containers you would like to OFFLOAD from ship: ").split(",")
+        for x in off:
+            offloads.append(x.strip().capitalize())
         
-    locToDrop[0] = move[0]
-    shipLayout[locToDrop[0]][locToDrop[1]] = shipLayout[containerHeld[0]][containerHeld[1]]
-    shipLayout[containerHeld[0]][containerHeld[1]] = 0
-    return (locToDrop, shipLayout)
+        actualOnloads = []
+        actualOffloads = []
 
-def pickupContainer(self, move, shipLayout):
-    column = shipLayout[move[0]]
+        for key, val in dummyContainers.items():
+            if val[1] in onloads:
+                actualOnloads.append(key)
+            if val[1] in offloads:
+                actualOffloads.append(key)
 
-    for c in column[::-1]:
-        if c > 0:
-            row = shipLayout[move[0]].index(c)
-            return (move[0], row)
+        start = time.time()
+        hq.heappush(exploreStates, node)
 
-def getDropoffLocs(self, container, move, shipLayout):
-    possibleDropOffs = []
-    column = shipLayout[move[0] - 1]
-
-    for i, col in enumerate(shipLayout):
-        for j, val in enumerate(col):
-            if val == 0 and i != container[0]:
-                possibleDropOffs.append([i, j])
-                break
-
-    return possibleDropOffs
+        puzzle.onloadOffload(actualOnloads, actualOffloads)
