@@ -1,7 +1,7 @@
 # HEAVY HEAVY HEAVY inspo from CS170 8 Puzzle project, linked here:
 # https://github.com/Arnav-Menon/CS170/blob/523587237ddec22717e4973c0cd4aa29417ec87c/8puzzle/main.py
 
-
+import os
 import itertools
 import heapq as hq
 import copy
@@ -19,6 +19,22 @@ createdPaths = []
 onOffShipsDone = []
 createdOnOffShips = []
 maxSize = 1
+
+def reset_variables():
+    global dummyContainers, containers, namesOfContainers, visitedStates, createdStates, exploreStates, pathStates, visitedPaths, createdPaths, onOffShipsDone, createdOnOffShips, maxSize
+    print("RESETTING NOW")
+    dummyContainers = {}
+    containers = []
+    namesOfContainers = []
+    visitedStates = []
+    createdStates = []
+    exploreStates = []
+    pathStates = []
+    visitedPaths = []
+    createdPaths = []
+    onOffShipsDone = []
+    createdOnOffShips = []
+    maxSize = 1
 
 class Node:
     def __init__(self, balanceMass, shipLayout, parent, names):
@@ -383,7 +399,7 @@ class Puzzle:
         return (movesToMake, namesOfContainers)
     
     def writeOutboundManifest(self, shipName, shipLayout):
-        filename = shipName + "_OUTBOUNDManifest.txt"
+        filename = shipName + "OUTBOUND.txt"
         f = open(filename, "w")
 
         for i in range(0, len(shipLayout[0])):
@@ -406,15 +422,10 @@ class Puzzle:
         f.close()
         return filename, f
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+def calculate(filename):
     
-    filename = "ShipCase"
-    filetype = ".txt"
-    file_num = input("Select number 1-5 for approriate test file: ")
-
-    shipName = filename + file_num
-    filename += file_num + filetype
-    # filename = "ShipCase4.txt"
+    shipName = filename.split(".")[0]
 
     puzzle = Puzzle()
     nanCounter = puzzle.readfile(filename)
@@ -446,6 +457,10 @@ if __name__ == "__main__":
         print("Took", depth, "levels to find solution")
         print(f"Took {time.time() - start:.1f} seconds")
         print("Outbound Manifest Printed:", outboundManifestFileName)
+
+        # remove og Manifest and OUTBOUND Manifest
+        os.remove(filename)
+        os.remove(outboundManifestFileName)
 
     # mode == 2, onload/offload
     else:
