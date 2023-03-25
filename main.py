@@ -457,9 +457,7 @@ def calculate(filename):
         print(f"Took {time.time() - start:.1f} seconds")
         print("Outbound Manifest Printed:", outboundManifestFileName)
 
-        # remove og Manifest and OUTBOUND Manifest
-        os.remove(filename)
-        os.remove(outboundManifestFileName)
+        return [full_paths, names]
 
     # mode == 2, onload/offload
     else:
