@@ -1,7 +1,6 @@
 # HEAVY HEAVY HEAVY inspo from CS170 8 Puzzle project, linked here:
 # https://github.com/Arnav-Menon/CS170/blob/523587237ddec22717e4973c0cd4aa29417ec87c/8puzzle/main.py
 
-import os
 import itertools
 import heapq as hq
 import copy
@@ -229,7 +228,6 @@ class Node:
     def __lt__(self, other):
         return self.fn < other.fn
 
-
 class Puzzle:
     def __init__(self):
         # if 0, left side is heavier
@@ -442,13 +440,16 @@ def calculate(filename):
         puzzle.heavySide = 0 if node.leftMass > node.rightMass else 1
 
         start = time.time()
+
         print("Starting...")
+
         hq.heappush(exploreStates, node)
 
         depth, moves, names, goalState = puzzle.balance()
 
         full_paths = puzzle.findPath2(moves, node.shipLayout)
         for i, f in enumerate(full_paths):
+
             print(f"\t{names[i]} --> {f}")
 
         outboundManifestFileName, outboundManifest = puzzle.writeOutboundManifest(shipName, goalState)
@@ -458,6 +459,7 @@ def calculate(filename):
         print("Outbound Manifest Printed:", outboundManifestFileName)
 
         return [full_paths, names]
+
 
     # mode == 2, onload/offload
     else:
@@ -484,3 +486,4 @@ def calculate(filename):
         hq.heappush(exploreStates, node)
 
         puzzle.onloadOffload(actualOnloads, actualOffloads)
+        
